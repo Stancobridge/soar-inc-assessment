@@ -1,6 +1,7 @@
 const http              = require('http');
 const express           = require('express');
 const cors              = require('cors');
+const rateLimiter       = require('../../rate_limiter/rate.limiter');
 const app               = express();
 
 module.exports = class UserServer {
@@ -8,7 +9,7 @@ module.exports = class UserServer {
         this.config        = config;
         this.userApi       = managers.userApi;
     }
-    
+
     /** for injecting middlewares */
     use(args){
         app.use(args);
@@ -17,6 +18,7 @@ module.exports = class UserServer {
     /** server configs */
     run(){
         app.use(cors({origin: '*'}));
+        app.use(rateLimiter);
         app.use(express.json());
         app.use(express.urlencoded({ extended: true}));
         app.use('/static', express.static('public'));
@@ -26,7 +28,7 @@ module.exports = class UserServer {
             console.error(err.stack)
             res.status(500).send('Something broke!')
         });
-        
+
         /** a single middleware to handle all */
         app.all('/api/:moduleName/:fnName', this.userApi.mw);
 

@@ -11,7 +11,7 @@ const keyCheck = (key) => {
 module.exports = ({ prefix, url}) => {
 
     if (!prefix || !url) throw Error('missing in memory arguments');
-    
+
     /** creating inmemory client */
     const redisClient = require('./redis-client').createClient({
         prefix, url
@@ -21,8 +21,8 @@ module.exports = ({ prefix, url}) => {
     return {
         search: {
             /**
-             * 
-             * @param {string} index reperesent the index name ex: 'object:index' 
+             *
+             * @param {string} index reperesent the index name ex: 'object:index'
              */
             createIndex: async ({index, prefix, schema })=>{
                 if(!schema || !prefix || !index){
@@ -84,7 +84,7 @@ module.exports = ({ prefix, url}) => {
                 return { count, docs: sightings, time:  `${Math.trunc(endTime - startTime)}ms`};
             }
 
-            
+
         },
         hyperlog: {
             add: async({key, items})=>{
@@ -105,7 +105,7 @@ module.exports = ({ prefix, url}) => {
                 return count;
             },
             merge: async({keys})=>{
-                let count = 0; 
+                let count = 0;
                 try {
                     count = await redisClient.call('PFMERGE', ...keys);
                 } catch(err){
@@ -143,13 +143,13 @@ module.exports = ({ prefix, url}) => {
                 let result = await redisClient.hset(key, fieldKey, data);
                 return result;
             },
-    
+
             getField: async ({ key, fieldKey }) => {
                 let result = await redisClient.hget(key, fieldKey);
                 return result;
             },
-            
-            
+
+
             getFields: async ({ key, fields }) => {
                 let result = await redisClient.hmget(key, ...fields);
                 /** resuts are retruned as an array of values with the same order of the fields */
@@ -159,7 +159,7 @@ module.exports = ({ prefix, url}) => {
                         obj[fields[i]]=result[i];
                     }
                     return obj;
-                } 
+                }
                 return result;
             },
         },
@@ -168,12 +168,12 @@ module.exports = ({ prefix, url}) => {
                 let result = await redisClient.expire(key, expire);
                 return result;
             },
-    
+
             exists: async ({ key }) => {
                 let result = await redisClient.exists(key);
                 return (result === 1);
             },
-    
+
             delete: async ({ key }) => {
                 keyCheck(key);
                 let result = false;
@@ -200,7 +200,7 @@ module.exports = ({ prefix, url}) => {
                 }
                 return result;
             },
-    
+
             get: async ({ key }) => {
                 keyCheck(key);
                 let result = '';
@@ -212,7 +212,7 @@ module.exports = ({ prefix, url}) => {
                 /** redis returned string 'null' when the key is not found */
                 return result;
             },
-    
+
         },
         set: {
             add: async ({ key, arr }) => {
@@ -244,7 +244,7 @@ module.exports = ({ prefix, url}) => {
                 if(!sort)sort='H2L';
                 if(sort.toUpperCase()=="H2L"){
                     args.push("REV");
-                } 
+                }
                 if(withScores)args.push("WITHSCORES");
                 try {
                     res = await redisClient.call(...args);
@@ -311,7 +311,7 @@ module.exports = ({ prefix, url}) => {
     //     getTimeSeries: async({
     //         key
     //     })=>{
- 
+
     //         keyCheck(key);
     //         let result = [];
     //         key = prefix+":"+key;
@@ -339,7 +339,7 @@ module.exports = ({ prefix, url}) => {
     //     createTimeSeries: async({
     //         key,
     //         retention,
-    //         labels, //key value 
+    //         labels, //key value
     //     })=>{
     //         try {
     //             let labelsArr = [];
@@ -350,7 +350,7 @@ module.exports = ({ prefix, url}) => {
     //         }
     //     },
 
-       
+
     //     getMulti: async ({ keys }) => {
     //         if (!keys || keys.length == 0) return;
     //         let results = await redisClient.mget(keys);
@@ -368,7 +368,7 @@ module.exports = ({ prefix, url}) => {
     //         let result = await redisClient.set(...args);
     //         return result;
     //     },
-        
+
 
 
 
@@ -398,7 +398,7 @@ module.exports = ({ prefix, url}) => {
     //         } catch(err){
     //             console.log(err);
     //         }
-            
+
     //         return r;
     //     },
 
@@ -471,7 +471,7 @@ module.exports = ({ prefix, url}) => {
     //             console.log(err);
     //             console.log(`failed to getLowestScore for key ${key}`);
     //         }
-            
+
     //         return result;
     //         // ZRANGEBYSCORE myset -inf +inf withScoresS LIMIT 0 1
     //     },
