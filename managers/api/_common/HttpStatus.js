@@ -1,4 +1,4 @@
-const HTTP_STATUS_CODES = {
+const HTTP_STATUS = {
     // 1xx Informational
     CONTINUE: 100,
     SWITCHING_PROTOCOLS: 101,
@@ -72,4 +72,4 @@ const HTTP_STATUS_CODES = {
     NETWORK_AUTHENTICATION_REQUIRED: 511
 };
 
-module.exports = HTTP_STATUS_CODES;
+module.exports = HTTP_STATUS;

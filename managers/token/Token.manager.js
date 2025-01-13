@@ -13,33 +13,33 @@ module.exports = class TokenManager {
         this.httpExposed         = ['v1_createShortToken'];
     }
 
-    /** 
-     * short token are issue from long token 
-     * short tokens are issued for 72 hours 
+    /**
+     * short token are issue from long token
+     * short tokens are issued for 72 hours
      * short tokens are connected to user-agent
-     * short token are used on the soft logout 
-     * short tokens are used for account switch 
-     * short token represents a device. 
-     * long token represents a single user. 
-     *  
+     * short token are used on the soft logout
+     * short tokens are used for account switch
+     * short token represents a device.
+     * long token represents a single user.
+     *
      * long token contains immutable data and long lived
      * master key must exists on any device to create short tokens
      */
     genLongToken({userId, userKey}){
         return jwt.sign(
-            { 
-                userKey, 
+            {
+                userKey,
                 userId,
-            }, 
-            this.config.dotEnv.LONG_TOKEN_SECRET, 
+            },
+            this.config.dotEnv.LONG_TOKEN_SECRET,
             {expiresIn: this.longTokenExpiresIn
         })
     }
 
     genShortToken({userId, userKey, sessionId, deviceId}){
         return jwt.sign(
-            { userKey, userId, sessionId, deviceId}, 
-            this.config.dotEnv.SHORT_TOKEN_SECRET, 
+            { userKey, userId, sessionId, deviceId},
+            this.config.dotEnv.SHORT_TOKEN_SECRET,
             {expiresIn: this.shortTokenExpiresIn
         })
     }
@@ -66,9 +66,9 @@ module.exports = class TokenManager {
 
         let decoded = __longToken;
         console.log(decoded);
-        
+
         let shortToken = this.genShortToken({
-            userId: decoded.userId, 
+            userId: decoded.userId,
             userKey: decoded.userKey,
             sessionId: nanoid(),
             deviceId: md5(__device),

@@ -146,6 +146,7 @@ module.exports = class ApiHandler {
 
         let targetStack = this.mwsStack[`${moduleName}.${fnName}`];
 
+
         let hotBolt = this.mwsExec.createBolt({stack: targetStack, req, res, onDone: async ({req, res, results})=>{
 
             /** executed after all middleware finished */
