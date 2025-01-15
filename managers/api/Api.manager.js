@@ -156,10 +156,17 @@ module.exports = class ApiHandler {
         let fnName = req.params.fnName || 'index';
         let moduleMatrix = this.methodMatrix[moduleName];
 
+        if(!moduleMatrix) console.log(`module ${moduleName} not found`);
+
+        if(!moduleMatrix[method]) console.log(`method ${method} not found for module ${moduleName}`);
+
         const noneParametrizedRoute = moduleMatrix?.[method]?.includes(fnName);
+        if(!noneParametrizedRoute) console.log(`function ${fnName} in ${moduleName} module`);
 
         const parametrizedRoute =
             this.methodMatrix[moduleName]?.['routesWithParams']?.[method];
+
+        if(!parametrizedRoute) console.log(`no parametrized route for ${method} method in ${moduleName} module`);
 
         // if there is no none parametrized route and no parametrized route, return with error
         if (!noneParametrizedRoute && !parametrizedRoute) {
