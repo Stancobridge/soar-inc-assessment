@@ -18,7 +18,7 @@ const slugify = (text)=>{
 
 /**
 * check if string can be parsed to positive valid number
-* @param {*} str 
+* @param {*} str
 * @returns boolean
 */
 const isNormalInteg = (str)=>{
@@ -27,9 +27,9 @@ return n !== Infinity && String(n) === str && n >= 0;
 }
 
 /**
-* 
+*
 * @param {*} path 'a.b.c'
-* @param {*} obj an object to extract value of 
+* @param {*} obj an object to extract value of
 */
 const getDeepValue = (path, obj) => {
 for (var i = 0, path = path.split('.'), len = path.length; i < len; i++) {
@@ -131,7 +131,12 @@ const match = (str, model) => {
 const isChance = (max)=>{
     let min = 0;
     let value = Math.floor(Math.random() * (max - min + 1) + min);
-    return min == value; 
+    return min == value;
+}
+
+const generateRegistrationNumber = (classRoomId)=>{
+    const random8DigitNumber = Math.floor(Math.random() * 90000000) + 10000000;
+    return `${classRoomId}-${random8DigitNumber}`;
 }
 
 module.exports = {
@@ -147,5 +152,6 @@ module.exports = {
   hrTime,
   match,
   isChance,
+  generateRegistrationNumber
 
 }

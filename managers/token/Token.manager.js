@@ -9,8 +9,6 @@ module.exports = class TokenManager {
         this.config              = config;
         this.longTokenExpiresIn  = '3y';
         this.shortTokenExpiresIn = '1y';
-
-        this.httpExposed         = ['v1_createShortToken'];
     }
 
     /**
@@ -60,20 +58,4 @@ module.exports = class TokenManager {
     }
 
 
-    /** generate shortId based on a longId */
-    v1_createShortToken({__longToken, __device}){
-
-
-        let decoded = __longToken;
-        console.log(decoded);
-
-        let shortToken = this.genShortToken({
-            userId: decoded.userId,
-            userKey: decoded.userKey,
-            sessionId: nanoid(),
-            deviceId: md5(__device),
-        });
-
-        return { shortToken };
-    }
 }

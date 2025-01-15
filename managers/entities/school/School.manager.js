@@ -1,6 +1,5 @@
 const { getPagination } = require("../../../libs/pagination");
-const { isSuperAdmin } = require("../../../libs/roles");
-const HTTP_STATUS = require("../../api/_common/HttpStatus");
+const HTTP_STATUS       = require("../../api/_common/HttpStatus");
 
 module.exports = class SchoolManager {
     constructor({ managers, mongomodels, validators }) {
@@ -9,10 +8,10 @@ module.exports = class SchoolManager {
         this.managers = managers;
         this.httpExposed = [
             'post=index.createSchool',
-            'patch=updateSchool:id',
-            'get=getOneSchool:id',
+            'patch=updateSchool:schoolId',
+            'get=getOneSchool:schoolId',
             'get=index.getAllSchools',
-            'delete=deleteSchool:id',
+            'delete=deleteSchool:schoolId',
         ];
     }
 
@@ -54,7 +53,7 @@ module.exports = class SchoolManager {
                 return this.managers.responseTransformer.errorTransformer({
                     message: 'School with this email already exists',
                     error: [],
-                    code: HTTP_STATUS.UNPROCESSABLE_ENTITY,
+                    code: HTTP_STATUS.CONFLICT,
                 });
             }
 
@@ -81,7 +80,7 @@ module.exports = class SchoolManager {
             }
 
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error creating school',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -95,12 +94,12 @@ module.exports = class SchoolManager {
         description,
         phone,
         email,
+        __params,
         __authentication,
         __superAdmin,
-        __params,
     }) {
         try {
-            const schoolId = __params.id;
+            const schoolId = __params.schoolId;
 
             let validationResult = await this.validators.school.updateSchool({
                 name,
@@ -118,16 +117,10 @@ module.exports = class SchoolManager {
                     code: HTTP_STATUS.UNPROCESSABLE_ENTITY,
                 });
 
-            let school = await this.mongomodels.School.findOne({
-                _id: schoolId,
-            });
+            let school = await this.getSchoolById(schoolId);
 
-            if (!school) {
-                return this.managers.responseTransformer.errorTransformer({
-                    message: 'School not found',
-                    error: [],
-                    code: HTTP_STATUS.NOT_FOUND,
-                });
+            if (school.errors) {
+                return school;
             }
 
             if (email) {
@@ -166,7 +159,7 @@ module.exports = class SchoolManager {
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error updating school',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -175,18 +168,11 @@ module.exports = class SchoolManager {
 
     async getOneSchool({ __params, __authentication }) {
         try {
-            const school = await this.mongomodels.School.findOne({
-                _id: __params.id,
-            });
+            const school = await this.getSchoolById(__params.schoolId);
 
-            if (!school) {
-                return this.managers.responseTransformer.errorTransformer({
-                    message: 'School not found',
-                    error: [],
-                    code: HTTP_STATUS.NOT_FOUND,
-                });
+            if (school.errors) {
+                return school;
             }
-
 
             return this.managers.responseTransformer.successTransformer({
                 message: 'School fetched successfully',
@@ -196,15 +182,14 @@ module.exports = class SchoolManager {
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error fetching school',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
         }
     }
 
-    async getAllSchools({ __authentication, __query }) {
-
+    async getAllSchools({ __query, __authentication }) {
         try {
             const options = getPagination(__query);
             const schools = await this.mongomodels.School.paginate({}, options);
@@ -217,14 +202,14 @@ module.exports = class SchoolManager {
                     currentPage: schools.page,
                     totalSchools: schools.totalDocs,
                     hasNextPage: schools.hasNextPage,
-                    hasPrevPage: schools.hasPrevPage
+                    hasPrevPage: schools.hasPrevPage,
                 },
                 code: HTTP_STATUS.OK,
             });
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error fetching schools',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -232,10 +217,33 @@ module.exports = class SchoolManager {
     }
 
     async deleteSchool({ __params, __authentication, __superAdmin }) {
-
         try {
-            const school = await this.mongomodels.School.findOne({ _id: __params.id });
+            const { schoolId } = __params;
+            let school = await this.getSchoolById(schoolId);
 
+            if (school.errors) {
+                return school;
+            }
+
+            await school.deleteOne();
+
+            return this.managers.responseTransformer.successTransformer({
+                message: 'School deleted successfully',
+                data: {},
+                code: HTTP_STATUS.OK,
+            });
+        } catch (error) {
+            console.log('error occurred', error);
+            return this.managers.responseTransformer.errorTransformer({
+                message: 'Error deleting school',
+                error: [],
+                code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+            });
+        }
+    }
+
+    async getSchoolById(schoolId) {
+        const school = await this.mongomodels.School.findOne({ _id: schoolId });
         if (!school) {
             return this.managers.responseTransformer.errorTransformer({
                 message: 'School not found',
@@ -243,19 +251,6 @@ module.exports = class SchoolManager {
                 code: HTTP_STATUS.NOT_FOUND,
             });
         }
-        await school.deleteOne();
-        return this.managers.responseTransformer.successTransformer({
-            message: 'School deleted successfully',
-            data: {},
-            code: HTTP_STATUS.OK,
-        });
-        } catch (error) {
-            console.log('error occurred', error);
-            return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
-                error: [],
-                code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
-            });
-        }
+        return school;
     }
 };

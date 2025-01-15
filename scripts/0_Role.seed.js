@@ -8,11 +8,11 @@ const Role = require('../managers/entities/role/Role.mongoModel');
 module.exports = class RoleSeed {
     data() {
         return [
-            { name: 'SuperAdmin',  slug: 'super-admin' },
-            { name: 'SchoolAdmin', slug: 'school-admin' },
-            { name: 'Student',     slug: 'student' },
+            { name: 'SuperAdmin', slug: 'super-admin' },
+            { name: 'SchoolAdministrator', slug: 'school-administrator' },
+            { name: 'Student', slug: 'student' },
             // default role for newly created user, especially students
-            { name: 'User',        slug: 'user' }
+            { name: 'User', slug: 'user' },
         ];
     }
 

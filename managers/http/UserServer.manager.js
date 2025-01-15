@@ -4,6 +4,7 @@ const cors              = require('cors');
 const rateLimiter       = require('../../rate_limiter/rate.limiter');
 const HTTP_STATUS       = require('../api/_common/HttpStatus');
 const app               = express();
+const helmet            = require('helmet');
 
 module.exports = class UserServer {
     constructor({config, managers}){
@@ -19,6 +20,7 @@ module.exports = class UserServer {
     /** server configs */
     run(){
         app.use(cors({origin: '*'}));
+        app.use(helmet());
         app.use(rateLimiter);
         app.use(express.json());
         app.use(express.urlencoded({ extended: true}));
