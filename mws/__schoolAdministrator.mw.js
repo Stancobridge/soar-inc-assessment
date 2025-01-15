@@ -20,6 +20,7 @@ module.exports = ({ managers }) => {
 
         const roles = await managers.user.getUserRoles({ userId: decoded.userId });
 
+        console.log({roles})
 
         const isSuperAdmin = roles.some(role => role === 'school-administrator');
 

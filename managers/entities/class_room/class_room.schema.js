@@ -7,4 +7,8 @@ module.exports = {
         type: String,
         required: true,
     },
+    capacity: {
+        type: Number,
+        required: true,
+    },
 };

@@ -159,6 +159,7 @@ module.exports = class ApiHandler {
     }
 
 
+
     async _exec({targetModule, fnName, cb, data}){
         let result = {};
 
@@ -211,7 +212,6 @@ module.exports = class ApiHandler {
                 message: `${method.toUpperCase()} request to ${req.path} not found`,
             });
         }
-
 
         if (indexedRoute) {
             fnName = indexedRoute[method];

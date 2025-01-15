@@ -8,7 +8,7 @@ module.exports = class SchoolManager {
         this.managers = managers;
         this.httpExposed = [
             'post=index.createSchool',
-            'patch=updateSchool:id',
+            'patch=updateSchool:schoolId',
             'get=getOneSchool:schoolId',
             'get=index.getAllSchools',
             'delete=deleteSchool:schoolId',
@@ -53,7 +53,7 @@ module.exports = class SchoolManager {
                 return this.managers.responseTransformer.errorTransformer({
                     message: 'School with this email already exists',
                     error: [],
-                    code: HTTP_STATUS.UNPROCESSABLE_ENTITY,
+                    code: HTTP_STATUS.CONFLICT,
                 });
             }
 
@@ -99,7 +99,7 @@ module.exports = class SchoolManager {
         __superAdmin,
     }) {
         try {
-            const schoolId = __params.id;
+            const schoolId = __params.schoolId;
 
             let validationResult = await this.validators.school.updateSchool({
                 name,

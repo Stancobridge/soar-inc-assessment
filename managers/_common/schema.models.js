@@ -155,4 +155,10 @@ module.exports = {
         type: 'string',
         label: 'userId',
     },
+    capacity: {
+        path: 'capacity',
+        type: 'number',
+        label: 'capacity',
+
+    },
 };
