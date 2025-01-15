@@ -18,6 +18,7 @@ module.exports = {
         },
         {
             model: 'password',
+            length: { min: 8, max: 16 },
             required: true,
         },
         {
