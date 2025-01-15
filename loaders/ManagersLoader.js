@@ -19,6 +19,8 @@ const User                  = require('../managers/entities/user/User.manager');
 const SchoolManager         = require('../managers/entities/school/School.manager');
 const SchoolAdminManager    = require('../managers/entities/shool_admin/SchoolAdmin.manager');
 const ClassRoomManager      = require('../managers/entities/class_room/ClassRoom.manager');
+const StudentManager        = require('../managers/entities/student/Student.manager');
+const RefreshTokenManager   = require('../managers/entities/refresh_token/RefreshToken.manager');
 
 /**
  * load sharable modules
@@ -82,6 +84,8 @@ module.exports = class ManagersLoader {
         this.managers.schools             = new SchoolManager(this.injectable);
         this.managers['school-admins']    = new SchoolAdminManager(this.injectable);
         this.managers['class-rooms']      = new ClassRoomManager(this.injectable);
+        this.managers['students']         = new StudentManager(this.injectable);
+        this.managers['refresh-tokens']   = new RefreshTokenManager(this.injectable);
         this.managers.userApi             = new ApiHandler({...this.injectable,...{prop:'httpExposed'}});
         this.managers.userServer          = new UserServer({ config: this.config, managers: this.managers });
 

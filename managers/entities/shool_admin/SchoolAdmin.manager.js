@@ -32,7 +32,7 @@ module.exports = class SchoolAdminManager {
                 return this.managers.responseTransformer.errorTransformer({
                     message: 'Invalid school admin data',
                     error: validationResult,
-                    code: HTTP_STATUS.UNPROCESSABLE_ENTITY,
+                    code: HTTP_STATUS.CONFLICT,
                 });
             }
 
@@ -237,10 +237,27 @@ module.exports = class SchoolAdminManager {
     }
 
     async revalidateUserRoles(userId) {
-        // expire the cache after 1 hour
+        await this.cache.key.delete({ key: `user:${userId}:rolesId` });
         await this.cache.key.delete({ key: `user:${userId}:roles` });
-        // expire the cache after 1 hour
-        await this.cache.key.delete({ key: `user:${userId}`});
-        await this.cache.key.delete({ key: `user:${userId}:rolesId`});
+        await this.cache.key.delete({ key: `user:${userId}` });
+    }
+
+    async checkIfUserIsSchoolAdmin(userId, schoolId) {
+        const schoolAdmin = await this.findOneSchoolAdmin({ userId, schoolId });
+
+        if (schoolAdmin.code && schoolAdmin.code === HTTP_STATUS.NOT_FOUND) {
+            return this.managers.responseTransformer.errorTransformer({
+                message:
+                    'You are not authorized to manage class rooms for this school',
+                error: [],
+                code: HTTP_STATUS.UNAUTHORIZED,
+            });
+        }
+
+        if (schoolAdmin.errors) {
+            return schoolAdmin;
+        }
+
+        return schoolAdmin;
     }
 };

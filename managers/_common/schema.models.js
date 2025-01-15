@@ -1,4 +1,4 @@
-const emojis = require('../../public/emojis.data.json');
+const emojis   = require('../../public/emojis.data.json');
 
 module.exports = {
     id: {
@@ -159,6 +159,25 @@ module.exports = {
         path: 'capacity',
         type: 'number',
         label: 'capacity',
-
+    },
+    classRoomId: {
+        path: 'classRoomId',
+        type: 'string',
+        label: 'classRoomId',
+    },
+    studentId: {
+        path: 'studentId',
+        type: 'string',
+        label: 'studentId',
+    },
+    status: {
+        path: 'status',
+        type: 'string',
+        label: 'status',
+    },
+    refreshToken: {
+        path: 'refreshToken',
+        type: 'string',
+        label: 'refreshToken',
     },
 };

@@ -80,7 +80,7 @@ module.exports = class SchoolManager {
             }
 
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error creating school',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -159,7 +159,7 @@ module.exports = class SchoolManager {
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error updating school',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -182,7 +182,7 @@ module.exports = class SchoolManager {
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error fetching school',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -209,7 +209,7 @@ module.exports = class SchoolManager {
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error fetching schools',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -235,7 +235,7 @@ module.exports = class SchoolManager {
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error deleting school',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });

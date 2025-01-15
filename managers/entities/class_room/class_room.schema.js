@@ -1,14 +1,30 @@
 module.exports = {
-    name: {
-        type: String,
-        required: true,
-    },
-    schoolId: {
-        type: String,
-        required: true,
-    },
-    capacity: {
-        type: Number,
-        required: true,
-    },
+    createClassRoom: [
+        {
+            model: 'name',
+            required: true,
+        },
+        {
+            model: 'schoolId',
+            required: true,
+        },
+        {
+            model: 'capacity',
+            required: true,
+            type: 'number',
+        },
+    ],
+    updateClassRoom: [
+        {
+            model: 'name',
+        },
+        {
+            model: 'schoolId',
+            required: true,
+        },
+        {
+            model: 'capacity',
+            type: 'number',
+        },
+    ],
 };

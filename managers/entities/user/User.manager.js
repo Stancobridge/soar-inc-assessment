@@ -74,14 +74,8 @@ module.exports = class User {
             key: `user:${userId}:roles`,
         });
 
-        console.log({ cachedRoles });
-
         if (!cachedRoles || Object.keys(cachedRoles).length === 0) {
-            let roles = await this.mongomodels.Role.find({
-                _id: { $in: user.roles },
-            }).select('slug');
-
-            console.log({ roles, userRoles: user.roles });
+            let roles = await this.mongomodels.Role.find({ _id: { $in: user.roles } }).select('slug');
 
             roles = roles.map(role => role.slug);
 

@@ -23,9 +23,8 @@ module.exports = class ClassRoomManager {
         __schoolAdministrator,
     }) {
         try {
-            const validationResult = this.validators.class_room.createClassRoom(
-                { name, schoolId, capacity }
-            );
+            const validationResult = await this.validators.class_room.createClassRoom({ name, schoolId, capacity });
+
             if (validationResult) {
                 return this.managers.responseTransformer.errorTransformer({
                     message: 'Invalid class room data',
@@ -34,7 +33,10 @@ module.exports = class ClassRoomManager {
                 });
             }
 
-            const schoolAdmin = await this.checkIfUserIsSchoolAdmin(__authentication._id, schoolId);
+            const schoolAdmin = await this.managers['school-admins'].checkIfUserIsSchoolAdmin(
+                __authentication._id,
+                schoolId
+            );
 
             if (schoolAdmin.errors) {
                 return schoolAdmin;
@@ -46,9 +48,10 @@ module.exports = class ClassRoomManager {
                 return school;
             }
 
-            // check if the class room name is already taken
+            // check if the class room name is already taken in the school
             let classRoom = await this.findOneClassRoom({ name, schoolId });
-            if (classRoom) {
+
+            if (classRoom.name) {
                 return this.managers.responseTransformer.errorTransformer({
                     message: 'Class room with this name already exists in this school',
                     error: [],
@@ -71,7 +74,7 @@ module.exports = class ClassRoomManager {
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error creating class room',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -87,18 +90,48 @@ module.exports = class ClassRoomManager {
         __schoolAdministrator,
     }) {
         try {
-            let classRoom = await this.findOneClassRoom({
-                _id: __params.classRoomId,
-            });
+
+            const classRoomId = __params.classRoomId;
+
+            const validationResult = await this.validators.class_room.updateClassRoom({ name, schoolId, capacity })
+
+            if (validationResult) {
+                return this.managers.responseTransformer.errorTransformer({
+                    message: 'Invalid class room data',
+                    error: validationResult,
+                    code: HTTP_STATUS.UNPROCESSABLE_ENTITY,
+                });
+            }
+
+            let classRoom = await this.findOneClassRoom({ _id: classRoomId });
 
             if (classRoom.errors) {
                 return classRoom;
             }
 
+            if (name) {
+                // make sure the name is unique
+                let classRoomWithSameName = await this.mongomodels.ClassRoom.findOne(
+                    {
+                        name,
+                        _id: { $ne: classRoomId },
+                    }
+                );
 
-            const schoolAdmin = await this.checkIfUserIsSchoolAdmin(
+                if (classRoomWithSameName) {
+                    return this.managers.responseTransformer.errorTransformer({
+                        message: 'Class room with this name already exists in this school',
+                        error: [],
+                        code: HTTP_STATUS.CONFLICT,
+                    });
+                }
+
+                classRoom.name = name;
+            }
+
+            const schoolAdmin = await this.managers['school-admins'].checkIfUserIsSchoolAdmin(
                 __authentication._id,
-                schoolId
+                schoolId || classRoom.schoolId
             );
 
             if (schoolAdmin.errors) {
@@ -107,6 +140,7 @@ module.exports = class ClassRoomManager {
 
             classRoom.name = name || classRoom.name;
             classRoom.capacity = capacity || classRoom.capacity;
+            classRoom.schoolId = schoolId || classRoom.schoolId;
 
             await classRoom.save();
 
@@ -115,10 +149,11 @@ module.exports = class ClassRoomManager {
                 data: classRoom,
                 code: HTTP_STATUS.OK,
             });
+
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error updating class room',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -143,7 +178,7 @@ module.exports = class ClassRoomManager {
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error fetching class room',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -154,7 +189,7 @@ module.exports = class ClassRoomManager {
         try {
             const paginationOptions = getPagination(__query);
 
-            const classRooms = await this.mongomodels.ClassRoom.paginate({ schoolId: __query.schoolId }, paginationOptions);
+            const classRooms = await this.mongomodels.ClassRoom.paginate({}, paginationOptions);
 
             return this.managers.responseTransformer.successTransformer({
                 message: 'Class rooms fetched successfully',
@@ -164,7 +199,7 @@ module.exports = class ClassRoomManager {
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error fetching class rooms',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -175,24 +210,24 @@ module.exports = class ClassRoomManager {
 
     async deleteClassRoom({ __params, __authentication, __schoolAdministrator }) {
         try {
-            const schoolId = __params.schoolId;
+            const classRoomId = __params.classRoomId;
 
-            const schoolAdmin = await this.checkIfUserIsSchoolAdmin(
+            let classRoom = await this.findOneClassRoom({ _id: classRoomId });
+
+            if (classRoom.errors) {
+                return classRoom;
+            }
+
+            const schoolAdmin = await this.managers['school-admins'].checkIfUserIsSchoolAdmin(
                 __authentication._id,
-                schoolId
+                classRoom.schoolId
             );
 
             if (schoolAdmin.errors) {
                 return schoolAdmin;
             }
 
-            let classRoom = await this.findOneClassRoom({ _id: __params.id });
-
-            if (classRoom.errors) {
-                return classRoom;
-            }
-
-            classRoom.deleteOne();
+            await classRoom.deleteOne();
 
             return this.managers.responseTransformer.successTransformer({
                 message: 'Class room deleted successfully',
@@ -202,7 +237,7 @@ module.exports = class ClassRoomManager {
         } catch (error) {
             console.log('error occurred', error);
             return this.managers.responseTransformer.errorTransformer({
-                message: 'Internal server error',
+                message: 'Error deleting class room',
                 error: [],
                 code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
             });
@@ -223,21 +258,4 @@ module.exports = class ClassRoomManager {
         return classRoom;
     }
 
-    async checkIfUserIsSchoolAdmin(userId, schoolId) {
-        const schoolAdmin = await this.managers.school_admin.findOneSchoolAdmin({ userId, schoolId });
-
-            if (schoolAdmin.code && schoolAdmin.code  === HTTP_STATUS.NOT_FOUND) {
-                return this.managers.responseTransformer.errorTransformer({
-                    message: 'You are not authorized to manage class rooms for this school',
-                    error: [],
-                    code: HTTP_STATUS.UNAUTHORIZED,
-                });
-            }
-
-            if(schoolAdmin.errors) {
-                return schoolAdmin;
-            }
-
-            return schoolAdmin;
-    }
 };

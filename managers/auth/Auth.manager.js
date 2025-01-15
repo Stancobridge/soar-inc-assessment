@@ -43,6 +43,11 @@ module.exports = class AuthManager {
             sessionId: nanoid()
         });
 
+        const refreshToken = await this.managers['refresh-tokens'].createRefreshToken({
+            userId: user._id.toString(),
+            username: user.username,
+        });
+
 
 
         return this.managers.responseTransformer.successTransformer({
@@ -54,7 +59,8 @@ module.exports = class AuthManager {
                     first_name: user.first_name,
                     last_name: user.last_name,
                 },
-                authToken
+                authToken,
+                refreshToken,
             },
             code: HTTP_STATUS.CREATED
         });
