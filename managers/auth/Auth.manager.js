@@ -4,8 +4,7 @@ const { nanoid }        = require('nanoid');
 const md5               = require('md5');
 
 module.exports = class AuthManager {
-   constructor({ config, managers, mongomodels, validators }){
-        this.config              = config;
+   constructor({ managers, mongomodels, validators }){
         this.managers            = managers;
         this.mongomodels         = mongomodels;
         this.validators          = validators;
@@ -14,7 +13,8 @@ module.exports = class AuthManager {
 
     async login({ username, password, __device }) {
 
-        let result = await this.validators.auth.login({ username, password });
+        try {
+            let result = await this.validators.auth.login({ username, password });
 
         if(result) return this.managers.responseTransformer.errorTransformer({
             message: "Invalid login data", error: result, code: HTTP_STATUS.UNPROCESSABLE_ENTITY
@@ -45,14 +45,25 @@ module.exports = class AuthManager {
 
 
 
-        return {
-            user : {
-                username: user.username,
-                email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
+        return this.managers.responseTransformer.successTransformer({
+            message: 'Login successful',
+            data: {
+                user : {
+                    username: user.username,
+                    email: user.email,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                },
+                authToken
             },
-            authToken
-        };
+            code: HTTP_STATUS.CREATED
+        });
+    } catch (error) {
+        return this.managers.responseTransformer.errorTransformer({
+            message: 'Internal server error',
+            error: [],
+                code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+            });
+        }
     }
 }

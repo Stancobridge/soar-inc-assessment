@@ -2,99 +2,118 @@ const emojis = require('../../public/emojis.data.json');
 
 module.exports = {
     id: {
-        path: "id",
-        type: "string",
+        path: 'id',
+        type: 'string',
         length: { min: 1, max: 50 },
+        label: 'id',
     },
     username: {
         path: 'username',
         type: 'string',
-        length: {min: 3, max: 20},
+        length: { min: 3, max: 20 },
         custom: 'username',
+        label: 'username',
     },
     password: {
         path: 'password',
         type: 'string',
-        length: {min: 8, max: 100},
-    },
-    email: {
-        path: 'email',
-        type: 'string',
-        length: {min:3, max: 100},
+        length: { min: 8, max: 100 },
+        label: 'password',
     },
     title: {
         path: 'title',
         type: 'string',
-        length: {min: 3, max: 300}
+        length: { min: 3, max: 300 },
+        label: 'title',
     },
     label: {
         path: 'label',
         type: 'string',
-        length: {min: 3, max: 100}
+        length: { min: 3, max: 100 },
+        label: 'label',
     },
     shortDesc: {
         path: 'desc',
         type: 'string',
-        length: {min:3, max: 300}
+        length: { min: 3, max: 300 },
+        label: 'shortDesc',
     },
     longDesc: {
         path: 'desc',
         type: 'string',
-        length: {min:3, max: 2000}
+        length: { min: 3, max: 2000 },
+        label: 'longDesc',
     },
     url: {
         path: 'url',
         type: 'string',
-        length: {min: 9, max: 300},
+        length: { min: 9, max: 300 },
+        label: 'url',
     },
     emoji: {
         path: 'emoji',
         type: 'Array',
+        label: 'emoji',
         items: {
             type: 'string',
-            length: {min: 1, max: 10},
+            length: { min: 1, max: 10 },
             oneOf: emojis.value,
-        }
+        },
     },
     price: {
         path: 'price',
         type: 'number',
+        label: 'price',
     },
     avatar: {
         path: 'avatar',
         type: 'string',
-        length: {min: 8, max: 100},
+        length: { min: 8, max: 100 },
+        label: 'avatar',
     },
     text: {
-        type: 'String',
-        length: {min: 3, max:15},
+        path: 'text',
+        type: 'string',
+        length: { min: 3, max: 15 },
+        label: 'text',
     },
     longText: {
-        type: 'String',
-        length: {min: 3, max:250},
+        path: 'longText',
+        type: 'string',
+        length: { min: 3, max: 250 },
+        label: 'longText',
     },
     paragraph: {
-        type: 'String',
-        length: {min: 3, max:10000},
+        path: 'paragraph',
+        type: 'string',
+        length: { min: 3, max: 10000 },
+        label: 'paragraph',
     },
     phone: {
-        type: 'String',
-        length: 13,
+        path: 'phone',
+        type: 'string',
+        length: { min: 10, max: 13 },
+        label: 'phone',
     },
     email: {
-        type: 'String',
+        path: 'email',
+        type: 'string',
         regex: /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+        message: 'Invalid email address',
+        label: 'email',
     },
     number: {
-        type: 'Number',
-        length: {min: 1, max:6},
+        path: 'number',
+        type: 'number',
+        length: { min: 1, max: 6 },
+        label: 'number',
     },
     arrayOfStrings: {
         type: 'Array',
         items: {
-            type: 'String',
-            length: { min: 3, max: 100}
-        }
+            type: 'string',
+            length: { min: 3, max: 100 },
+        },
     },
     obj: {
         type: 'Object',
@@ -102,4 +121,28 @@ module.exports = {
     bool: {
         type: 'Boolean',
     },
-}
+    name: {
+        path: 'name',
+        type: 'string',
+        length: { min: 3, max: 100 },
+        label: 'name',
+    },
+    address: {
+        path: 'address',
+        type: 'string',
+        length: { min: 5, max: 120 },
+        label: 'address',
+    },
+    website: {
+        path: 'website',
+        type: 'string',
+        length: { min: 5, max: 100 },
+        label: 'website',
+    },
+    description: {
+        path: 'description',
+        type: 'string',
+        length: { min: 3, max: 1000 },
+        label: 'description',
+    },
+};

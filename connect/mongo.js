@@ -1,5 +1,6 @@
-const mongoose      = require('mongoose');
-mongoose.Promise    = global.Promise;
+const mongoose         = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
+mongoose.Promise       = global.Promise;
 
 module.exports = ({uri})=>{
   //database connection
@@ -25,6 +26,10 @@ module.exports = ({uri})=>{
   mongoose.connection.on('disconnected', function () {
     console.log('💾  Mongoose default connection disconnected');
   });
+
+
+  // add pagination plugin
+  mongoose.plugin(mongoosePaginate);
 
   // If the Node process ends, close the Mongoose connection
   process.on('SIGINT', function() {
