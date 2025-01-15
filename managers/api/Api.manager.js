@@ -1,4 +1,5 @@
 const getParamNames = require('./_common/getParamNames');
+const HTTP_STATUS = require('./_common/HttpStatus');
 /**
  * scans all managers for exposed methods
  * and makes them available through a handler middleware
@@ -23,7 +24,7 @@ module.exports = class ApiHandler {
         this.methodMatrix  = {};
         this.auth          = {};
         this.fileUpload    = {};
-        this.mwsStack        = {};
+        this.mwsStack      = {};
         this.mw            = this.mw.bind(this);
 
         /** filter only the modules that have interceptors */
@@ -37,44 +38,70 @@ module.exports = class ApiHandler {
                     /** creating the method matrix */
                     let method = 'post';
                     let fnName = i;
-                    if(i.includes("=")){
+                    if (i.includes('=')) {
                         let frags = i.split('=');
-                        method=frags[0];
-                        fnName=frags[1];
+                        method = frags[0];
+                        fnName = frags[1];
                     }
-                    if(!this.methodMatrix[mk][method]){
-                        this.methodMatrix[mk][method]=[];
+                    if (!this.methodMatrix[mk][method]) {
+                        this.methodMatrix[mk][method] = [];
                     }
-                    this.methodMatrix[mk][method].push(fnName);
 
-                    let params = getParamNames(this.managers[mk][fnName], fnName, mk);
-                    params = params.split(',').map(i=>{
-                        i=i.trim();
-                        i=i.replace('{','');
-                        i=i.replace('}','');
+                    if (fnName.includes(':')) {
+
+                        const splittedFnName = fnName.split(':');
+                        fnName = splittedFnName[0];
+                        const param = splittedFnName[1];
+
+                        if (!this.methodMatrix[mk]['routesWithParams']?.[method] ) {
+                            this.methodMatrix[mk]['routesWithParams'] = {};
+                            this.methodMatrix[mk]['routesWithParams'][method] =
+                                {
+                                    param,
+                                    fnName,
+                                };
+                        } else {
+                            throw Error(`Module ${mk} already parametrized for ${method} method`);
+                        }
+
+                    } else {
+                        this.methodMatrix[mk][method].push(fnName);
+                    }
+
+
+                    let params = getParamNames(
+                        this.managers[mk][fnName],
+                        fnName,
+                        mk
+                    );
+                    params = params.split(',').map((i) => {
+                        i = i.trim();
+                        i = i.replace('{', '');
+                        i = i.replace('}', '');
                         return i;
-                    })
+                    });
                     /** building middlewares stack */
 
-                    params.forEach(param=>{
-                        if(!this.mwsStack[`${mk}.${fnName}`]){
-                            this.mwsStack[`${mk}.${fnName}`]=[];
+                    params.forEach((param) => {
+                        if (!this.mwsStack[`${mk}.${fnName}`]) {
+                            this.mwsStack[`${mk}.${fnName}`] = [];
                         }
-                        if(param.startsWith('__')){
+                        if (param.startsWith('__')) {
                             // this is a middleware identifier
                             // mws are executed in the same order they existed
                             /** check if middleware exists */
                             // console.log(this.mwsRepo);
-                            if(!this.mwsRepo[param]){
-                                throw Error(`Unable to find middleware ${param}`)
+                            if (!this.mwsRepo[param]) {
+                                throw Error(
+                                    `Unable to find middleware ${param}`
+                                );
                             } else {
                                 this.mwsStack[`${mk}.${fnName}`].push(param);
                             }
                         }
-                    })
+                    });
 
                     // console.log(`* ${i} :`, 'args=', params);
-
                 });
             }
         });
@@ -123,57 +150,77 @@ module.exports = class ApiHandler {
 
      /** a middle for executing admin apis trough HTTP */
     async mw(req, res, next){
+        let method = req.method.toLowerCase();
+        let moduleName = req.params.moduleName;
+        let context = req.params.context;
+        let fnName = req.params.fnName || 'index';
+        let moduleMatrix = this.methodMatrix[moduleName];
 
-        let method        = req.method.toLowerCase();
-        let moduleName    = req.params.moduleName;
-        let context       = req.params.context;
-        let fnName        = req.params.fnName;
-        let moduleMatrix  = this.methodMatrix[moduleName];
+        const noneParametrizedRoute = moduleMatrix?.[method]?.includes(fnName);
 
-        /** validate module */
-        if(!moduleMatrix) return this.managers.responseDispatcher.dispatch(res, {ok: false, message: `module ${moduleName} not found`});
+        const parametrizedRoute =
+            this.methodMatrix[moduleName]?.['routesWithParams']?.[method];
 
-        /** validate method */
-        if(!moduleMatrix[method]){
-            return this.managers.responseDispatcher.dispatch(res, {ok: false, message: `unsupported method ${method} for ${moduleName}`});
+        // if there is no none parametrized route and no parametrized route, return with error
+        if (!noneParametrizedRoute && !parametrizedRoute) {
+            return this.managers.responseDispatcher.dispatch(res, {
+                ok: false,
+                code: HTTP_STATUS.NOT_FOUND,
+                message: `${method.toUpperCase()} request to ${req.path} not found`,
+            });
         }
 
-        if(!moduleMatrix[method].includes(fnName)){
-            return this.managers.responseDispatcher.dispatch(res, {ok: false, message: `unable to find function ${fnName} with method ${method}`});
+        // if there is a parametrized route, set the params and fnName
+        if (parametrizedRoute) {
+            req.params = {
+                [parametrizedRoute.param]: fnName,
+                fnName: parametrizedRoute.fnName,
+            };
+            fnName = parametrizedRoute.fnName;
         }
-
-        // console.log(`${moduleName}.${fnName}`);
 
         let targetStack = this.mwsStack[`${moduleName}.${fnName}`];
 
+        let hotBolt = this.mwsExec.createBolt({
+            stack: targetStack,
+            req,
+            res,
+            onDone: async ({ req, res, results }) => {
+                /** executed after all middleware finished */
 
-        let hotBolt = this.mwsExec.createBolt({stack: targetStack, req, res, onDone: async ({req, res, results})=>{
-
-            /** executed after all middleware finished */
-
-            let body = req.body || {};
-            let result = await this._exec({targetModule: this.managers[moduleName], fnName, data: {
-                ...body,
-                ...results,
-                res,
-            }});
-            if(!result)result={}
-
-            if(result.selfHandleResponse){
-                // do nothing if response handeled
-            } else {
-
-                if(result.errors){
-                    return this.managers.responseDispatcher.dispatch(
+                let body = req.body || {};
+                let result = await this._exec({
+                    targetModule: this.managers[moduleName],
+                    fnName,
+                    data: {
+                        ...body,
+                        ...results,
                         res,
-                        { ok: false, errors: result.errors, message: result.message, code: result.code }
-                    );
-                } else {
-                    return this.managers.responseDispatcher.dispatch(res, {ok:true, data: result, code: result.code});
-                }
-            }
-        }});
-        hotBolt.run();
+                    },
+                });
+                if (!result) result = {};
 
+                if (result.selfHandleResponse) {
+                    // do nothing if response handeled
+                } else {
+                    if (result.errors || result.error) {
+                        const errors = result.errors || result.error;
+                        return this.managers.responseDispatcher.dispatch(res, {
+                            ok: false,
+                            errors,
+                            message: result.message,
+                            code: result.code,
+                        });
+                    } else {
+                        return this.managers.responseDispatcher.dispatch(res, {
+                            ok: true,
+                            data: result,
+                            code: result.code,
+                        });
+                    }
+                }
+            },
+        });
+        hotBolt.run();
     }
 }
