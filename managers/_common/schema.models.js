@@ -180,4 +180,20 @@ module.exports = {
         type: 'string',
         label: 'refreshToken',
     },
+    confirm_password: {
+        path: 'confirm_password',
+        type: 'string',
+        label: 'confirm_password',
+    },
+    first_name: {
+        path: 'first_name',
+        type: 'string',
+        label: 'first_name',
+    },
+    last_name: {
+        path: 'last_name',
+        type: 'string',
+        label: 'last_name',
+    },
+
 };

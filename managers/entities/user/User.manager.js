@@ -37,7 +37,7 @@ module.exports = class User {
         if (!user) return null;
 
         user = user.toObject();
-        const userRoles = user.roles;
+        const userRoles = user.roles ?? [];
 
         delete user.roles;
         delete user.password;
@@ -74,13 +74,17 @@ module.exports = class User {
             key: `user:${userId}:roles`,
         });
 
+
         if (!cachedRoles || Object.keys(cachedRoles).length === 0) {
             let roles = await this.mongomodels.Role.find({ _id: { $in: user.roles } }).select('slug');
 
             roles = roles.map(role => role.slug);
 
 
-            await this.cache.hash.set({ key: `user:${userId}:roles`, data: roles });
+            if (roles.length > 0) {
+                await this.cache.hash.set({ key: `user:${userId}:roles`, data: roles ?? [] });
+            }
+
             await this.cache.key.expire({ key: `user:${userId}:roles`, expire: this.expireCache });
 
             return roles;
