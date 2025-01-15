@@ -7,7 +7,7 @@
         "test": "jest --verbose --coverage",
         "dev": "nodemon index.js",
         "start": "node index.js",
-        "seed": "node seed/seed.js"
+        "seed": "node ./scripts/Seeder.js"
     },
     "author": "",
     "license": "ISC",
