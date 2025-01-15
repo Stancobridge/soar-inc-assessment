@@ -1,8 +1,7 @@
 module.exports = {
-  testMatch: [
-    '**/tests/**/*.test.js',
-    '**/tests/**/*.spec.js'
-  ],
-  testEnvironment: 'node',
-  verbose: true
+    testMatch: ['**/tests/**/*.test.js', '**/tests/**/*.spec.js'],
+    testEnvironment: 'node',
+    verbose: true,
+    setupFilesAfterEnv: ['./tests/setup.test.js'],
+    testPathIgnorePatterns: ['<rootDir>/tests/setup.test.js'],
 };
