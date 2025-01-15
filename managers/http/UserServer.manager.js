@@ -2,6 +2,7 @@ const http              = require('http');
 const express           = require('express');
 const cors              = require('cors');
 const rateLimiter       = require('../../rate_limiter/rate.limiter');
+const HTTP_STATUS       = require('../api/_common/HttpStatus');
 const app               = express();
 
 module.exports = class UserServer {
@@ -25,8 +26,23 @@ module.exports = class UserServer {
 
         /** an error handler */
         app.use((err, req, res, next) => {
-            // console.error(err.stack)
-            res.status(500).send('Something broke!')
+            if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+                // Handle JSON parsing errors
+                return res.status(400).send({
+                    message: 'Invalid JSON payload',
+                    ok: false,
+                    errors: [err.message],
+                    code: HTTP_STATUS.BAD_REQUEST,
+                });
+            }
+
+            // Handle other errors
+            res.status(500).send({
+                message: 'Internal server error',
+                ok: false,
+                errors: [],
+                code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+            });
         });
 
         /** a single middleware to handle all */

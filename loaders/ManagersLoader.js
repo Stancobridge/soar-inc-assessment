@@ -16,6 +16,7 @@ const TokenManager          = require('../managers/token/Token.manager');
 const SharkFin              = require('../managers/shark_fin/SharkFin.manager');
 const TimeMachine           = require('../managers/time_machine/TimeMachine.manager');
 const User                  = require('../managers/entities/user/User.manager');
+const SchoolManager         = require('../managers/entities/school/School.manager');
 
 /**
  * load sharable modules
@@ -75,6 +76,9 @@ module.exports = class ManagersLoader {
         this.managers.mwsExec             = new VirtualStack({ ...{ preStack: [/* '__token', */'__device',] }, ...this.injectable });
         this.managers.user                = new User(this.injectable);
         this.managers.auth                = new AuthManager(this.injectable);
+
+        this.managers.schools              = new SchoolManager(this.injectable);
+
         this.managers.userApi             = new ApiHandler({...this.injectable,...{prop:'httpExposed'}});
         this.managers.userServer          = new UserServer({ config: this.config, managers: this.managers });
 

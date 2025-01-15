@@ -64,7 +64,23 @@ module.exports = class ApiHandler {
                             throw Error(`Module ${mk} already parametrized for ${method} method`);
                         }
 
-                    } else {
+                    }
+                    else if (fnName.includes('index.')) {
+                        const splittedFnName = fnName.split('.');
+
+                        fnName = splittedFnName[1];
+
+                         if (!this.methodMatrix[mk]['indexedRoute']?.[method]) {
+                             this.methodMatrix[mk]['indexedRoute'] = {};
+                             this.methodMatrix[mk]['indexedRoute'][method] = fnName;
+                         } else {
+                             throw Error(
+                                 `Module ${mk} already parametrized for ${method} method`
+                             );
+                         }
+
+                    }
+                    else {
                         this.methodMatrix[mk][method].push(fnName);
                     }
 
@@ -141,7 +157,8 @@ module.exports = class ApiHandler {
                 result = await targetModule[`${fnName}`](data);
             } catch (err){
                 console.log(`error`, err);
-                result.error = `${fnName} failed to execute`;
+                result.error = 'Internal server error';
+                result.code = HTTP_STATUS.INTERNAL_SERVER_ERROR;
             }
 
         if(cb)cb(result);
@@ -158,23 +175,35 @@ module.exports = class ApiHandler {
 
         if(!moduleMatrix) console.log(`module ${moduleName} not found`);
 
-        if(!moduleMatrix[method]) console.log(`method ${method} not found for module ${moduleName}`);
+        if(!moduleMatrix?.[method]) console.log(`method ${method} not found for module ${moduleName}`);
+
+        let indexedRoute;
+        if (fnName === 'index' && !moduleMatrix?.[method]?.includes(fnName)) {
+            indexedRoute = moduleMatrix?.['indexedRoute'];
+        }
 
         const noneParametrizedRoute = moduleMatrix?.[method]?.includes(fnName);
-        if(!noneParametrizedRoute) console.log(`function ${fnName} in ${moduleName} module`);
+
+        if(!noneParametrizedRoute) console.log(`function ${fnName} not in exposed methods of ${moduleName} module`);
 
         const parametrizedRoute =
             this.methodMatrix[moduleName]?.['routesWithParams']?.[method];
 
         if(!parametrizedRoute) console.log(`no parametrized route for ${method} method in ${moduleName} module`);
 
+        const isDefaultIndexRouteExposed = noneParametrizedRoute && fnName === 'index';
+
         // if there is no none parametrized route and no parametrized route, return with error
-        if (!noneParametrizedRoute && !parametrizedRoute) {
+        if (!noneParametrizedRoute && !parametrizedRoute && !indexedRoute && !isDefaultIndexRouteExposed) {
             return this.managers.responseDispatcher.dispatch(res, {
                 ok: false,
                 code: HTTP_STATUS.NOT_FOUND,
                 message: `${method.toUpperCase()} request to ${req.path} not found`,
             });
+        }
+
+        if (indexedRoute) {
+            fnName = indexedRoute[method];
         }
 
         // if there is a parametrized route, set the params and fnName
@@ -208,9 +237,8 @@ module.exports = class ApiHandler {
                 if (!result) result = {};
 
                 if (result.selfHandleResponse) {
-                    // do nothing if response handeled
-                } else {
-                    if (result.errors || result.error) {
+                    // do nothing if response handled
+                } else if (result.errors || result.error) {
                         const errors = result.errors || result.error;
                         return this.managers.responseDispatcher.dispatch(res, {
                             ok: false,
@@ -218,14 +246,23 @@ module.exports = class ApiHandler {
                             message: result.message,
                             code: result.code,
                         });
-                    } else {
+                    } else if (result.data) {
                         return this.managers.responseDispatcher.dispatch(res, {
                             ok: true,
-                            data: result,
+                            data: result.data,
                             code: result.code,
+                            message: result.message,
+                        });
+                    } else {
+                        console.log('Invalid response from', moduleName, fnName);
+                        return this.managers.responseDispatcher.dispatch(res, {
+                            ok: false,
+                            errors: [],
+                            code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+                            message: 'Internal server error',
                         });
                     }
-                }
+
             },
         });
         hotBolt.run();

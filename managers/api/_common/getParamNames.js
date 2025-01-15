@@ -1,6 +1,6 @@
-/** 
- * takes a function 
- * and returns the param names 
+/**
+ * takes a function
+ * and returns the param names
  */
 
 var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
