@@ -54,7 +54,11 @@ module.exports = class ApiHandler {
                         const param = splittedFnName[1];
 
                         if (!this.methodMatrix[mk]['routesWithParams']?.[method] ) {
-                            this.methodMatrix[mk]['routesWithParams'] = {};
+
+                            if(!this.methodMatrix[mk]['routesWithParams']){
+                                this.methodMatrix[mk]['routesWithParams'] = {};
+                            }
+
                             this.methodMatrix[mk]['routesWithParams'][method] =
                                 {
                                     param,
@@ -70,14 +74,19 @@ module.exports = class ApiHandler {
 
                         fnName = splittedFnName[1];
 
-                         if (!this.methodMatrix[mk]['indexedRoute']?.[method]) {
-                             this.methodMatrix[mk]['indexedRoute'] = {};
-                             this.methodMatrix[mk]['indexedRoute'][method] = fnName;
-                         } else {
-                             throw Error(
-                                 `Module ${mk} already parametrized for ${method} method`
-                             );
-                         }
+
+                        if (!this.methodMatrix[mk]['indexedRoute']?.[method]) {
+
+                            if(!this.methodMatrix[mk]['indexedRoute']){
+                                this.methodMatrix[mk]['indexedRoute'] = {};
+                            }
+
+                            this.methodMatrix[mk]['indexedRoute'][method] = fnName;
+                        } else {
+                            throw Error(
+                                `Module ${mk} already parametrized for ${method} method`
+                            );
+                        }
 
                     }
                     else {
@@ -186,8 +195,9 @@ module.exports = class ApiHandler {
 
         if(!noneParametrizedRoute) console.log(`function ${fnName} not in exposed methods of ${moduleName} module`);
 
-        const parametrizedRoute =
-            this.methodMatrix[moduleName]?.['routesWithParams']?.[method];
+        const parametrizedRoute = !indexedRoute ?
+            this.methodMatrix[moduleName]?.['routesWithParams']?.[method] :
+            undefined;
 
         if(!parametrizedRoute) console.log(`no parametrized route for ${method} method in ${moduleName} module`);
 
@@ -201,6 +211,7 @@ module.exports = class ApiHandler {
                 message: `${method.toUpperCase()} request to ${req.path} not found`,
             });
         }
+
 
         if (indexedRoute) {
             fnName = indexedRoute[method];
@@ -216,6 +227,7 @@ module.exports = class ApiHandler {
         }
 
         let targetStack = this.mwsStack[`${moduleName}.${fnName}`];
+
 
         let hotBolt = this.mwsExec.createBolt({
             stack: targetStack,
