@@ -3,5 +3,5 @@ module.exports = {
     testEnvironment: 'node',
     verbose: true,
     setupFilesAfterEnv: ['./tests/setup.test.js'],
-    testPathIgnorePatterns: ['<rootDir>/tests/setup.test.js'],
+    testPathIgnorePatterns: ['./tests/setup.test.js'],
 };
