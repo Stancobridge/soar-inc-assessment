@@ -145,4 +145,14 @@ module.exports = {
         length: { min: 3, max: 1000 },
         label: 'description',
     },
+    schoolId: {
+        path: 'schoolId',
+        type: 'string',
+        label: 'schoolId',
+    },
+    userId: {
+        path: 'userId',
+        type: 'string',
+        label: 'userId',
+    },
 };
