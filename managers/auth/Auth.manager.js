@@ -9,23 +9,7 @@ module.exports = class AuthManager {
         this.managers            = managers;
         this.mongomodels         = mongomodels;
         this.validators          = validators;
-        this.httpExposed = [
-            'login',
-            'index',
-            'get=index',
-            // 'get=index:id',
-            // 'get=main',
-        ];
-    }
-
-
-    async index({ __device, __params }) {
-        console.log({ __params })
-        return {ok: true, message: 'Auth module is running'};
-    }
-
-    async main({ __device, __params }) {
-        return {ok: true, message: 'Auth module is running for main'};
+        this.httpExposed = [ 'login' ];
     }
 
     async login({ username, password, __device }) {
@@ -61,6 +45,14 @@ module.exports = class AuthManager {
 
 
 
-        return {user : {username: user.username, email: user.email, first_name: user.first_name, last_name: user.last_name}, authToken};
+        return {
+            user : {
+                username: user.username,
+                email: user.email,
+                first_name: user.first_name,
+                last_name: user.last_name,
+            },
+            authToken
+        };
     }
 }
