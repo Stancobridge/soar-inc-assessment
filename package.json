@@ -6,7 +6,8 @@
     "scripts": {
         "test": "jest --verbose --coverage",
         "dev": "nodemon index.js",
-        "start": "node index.js"
+        "start": "node index.js",
+        "seed": "node seed/seed.js"
     },
     "author": "",
     "license": "ISC",
