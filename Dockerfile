@@ -1,0 +1,50 @@
+# Use Node.js LTS version
+FROM node:18-alpine
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Install app dependencies
+# Copy package.json and package-lock.json first for better caching
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy app source
+COPY . .
+
+# Set environment variables
+ARG SERVICE_NAME
+ARG MONGO_URI
+ARG USER_PORT
+ARG CACHE_PREFIX
+ARG CACHE_REDIS
+ARG CORTEX_PREFIX
+ARG CORTEX_REDIS
+ARG CORTEX_TYPE
+ARG OYSTER_PREFIX
+ARG OYSTER_REDIS
+ARG LONG_TOKEN_SECRET
+ARG SHORT_TOKEN_SECRET
+ARG NACL_SECRET
+
+ENV SERVICE_NAME=${SERVICE_NAME}
+ENV MONGO_URI=${MONGO_URI}
+ENV USER_PORT=${USER_PORT}
+ENV CACHE_PREFIX=${CACHE_PREFIX}
+ENV CACHE_REDIS=${CACHE_REDIS}
+ENV CORTEX_PREFIX=${CORTEX_PREFIX}
+ENV CORTEX_REDIS=${CORTEX_REDIS}
+ENV CORTEX_TYPE=${CORTEX_TYPE}
+ENV OYSTER_PREFIX=${OYSTER_PREFIX}
+ENV OYSTER_REDIS=${OYSTER_REDIS}
+ENV LONG_TOKEN_SECRET=${LONG_TOKEN_SECRET}
+ENV SHORT_TOKEN_SECRET=${SHORT_TOKEN_SECRET}
+ENV NACL_SECRET=${NACL_SECRET}
+
+# Expose the port your app runs on
+EXPOSE 3000
+
+# Run database seeds and start the application
+CMD ["sh", "-c", "npm run seed && npm start"]

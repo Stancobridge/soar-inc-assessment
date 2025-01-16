@@ -46,6 +46,7 @@ A robust RESTful API service for managing schools, classrooms, and students with
 -   npm or yarn
 
 ## 📙 Database diagram
+
 The database design can be found here [View Document](https://drive.google.com/file/d/1FJl9TNYw4f2-F5_ALrZPD5SIamTj0zfR/view?usp=sharing)
 
 ## 🛠️ Technical decisions made.
@@ -106,10 +107,10 @@ NACL_SECRET=<NACL_SECRET> # can be empty for this use case
 ```
 
 ## 🌱 Seed default data (Roles and SuperAdmin)
+
 ```bsh
 npm run seed
 ```
-
 
 ## 🔒 Authentication
 
@@ -1184,22 +1185,99 @@ npm test tests/unit/schools.test.js
 -   XSS protection
 -   CORS configuration
 
-## 📝 License
+# How to Deploy
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## PM2 Deployment
 
-## 👥 Contributing
+1. Install PM2 globally:
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
+```bash
+npm install -g pm2
+```
 
-## ⚠️ Important Notes
+2. Start the application:
 
--   Ensure proper error handling in production
--   Regularly update dependencies
--   Monitor API rate limits
--   Back up database regularly
--   Follow security best practices
+```bash
+pm2 start ./index.js --name "school-management-api"
+```
+
+3. Enable startup script (auto-restart on server reboot):
+
+```bash
+pm2 startup
+pm2 save
+```
+
+4. Useful PM2 commands:
+
+```bash
+pm2 status                  # Check application status
+pm2 logs                    # View logs
+pm2 monit                   # Monitor CPU/Memory
+pm2 restart school-management-api  # Restart application
+```
+
+## Docker Deployment
+
+1. Build and run with Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+2. Monitor containers:
+
+```bash
+docker-compose ps
+docker-compose logs -f
+```
+
+# 🚀 Deployment
+
+## Environment Setup
+
+### Development
+
+1. Create a `.env` file in the root directory:
+
+```bash
+cp .env.example .env
+```
+
+2. Configure required environment variables
+
+### Production
+
+For production deployment, set environment variables securely:
+
+#### PM2
+
+```bash
+pm2 start src/index.js --name "school-management-api" --env-file .env.production
+```
+
+#### Docker
+
+Use docker-compose environment file:
+
+1. Create `.env.production`:
+
+```bash
+# Use production-specific values
+NODE_ENV=production
+MONGO_URI=mongodb://mongo:27017/school_db
+CACHE_REDIS=redis://redis:6379
+# ... other production values
+```
+
+2. Reference in docker-compose:
+
+```bash
+docker-compose --env-file .env.production up -d
+```
+
+### Security Notes
+
+-   Never commit `.env` files to version control
+-   Use different secrets for development and production
+-   Consider using a secrets management service in production
