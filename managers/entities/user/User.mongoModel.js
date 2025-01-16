@@ -9,6 +9,4 @@ const UserSchema = new mongoose.Schema({
     roles:      [ { type: mongoose.Schema.Types.ObjectId, ref: 'Role' } ],
 }, { timestamps: true, collection: 'users' });
 
-UserSchema.index({ username: 1, email: 1 }, { unique: true });
-
 module.exports = mongoose.model('User', UserSchema);
