@@ -46,7 +46,7 @@ A robust RESTful API service for managing schools, classrooms, and students with
 -   npm or yarn
 
 ## 📙 Database diagram
-The database design can be found here [View Document](https://drive.google.com/file/d/1kVb_nQ4xiVy1Y4u84xJut007uQGD4B7m/view?usp=sharing)
+The database design can be found here [View Document](https://drive.google.com/file/d/1FJl9TNYw4f2-F5_ALrZPD5SIamTj0zfR/view?usp=sharing)
 
 ## 🛠️ Technical decisions made.
 
