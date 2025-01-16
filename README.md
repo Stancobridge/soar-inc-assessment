@@ -1252,15 +1252,7 @@ pm2 start src/index.js --name "school-management-api" --env-file .env.production
 
 Use docker-compose environment file:
 
-1. Create `.env.production`:
-
-```bash
-# Use production-specific values
-NODE_ENV=production
-MONGO_URI=mongodb://mongo:27017/school_db
-CACHE_REDIS=redis://redis:6379
-# ... other production values
-```
+1. Create `.env.production`
 
 2. Reference in docker-compose:
 
