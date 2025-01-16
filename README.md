@@ -45,24 +45,25 @@ A robust RESTful API service for managing schools, classrooms, and students with
 -   MongoDB/Redis
 -   npm or yarn
 
-
 ## 🛠️ Technical decisions made.
+
 1. To accommodate the full REST API pattern, I modified the implementation of `Api.manager.js`. Initially, it did not support base routes and parameterized routes, such as `/api/students` and `/api/students/:id`. This change was made to enhance the system's functionality. It also affects how HTTP methods are exposed to the public. Here is how it looks now
 
 ```js
 this.httpExposed = [
-            'post=index.createSchool', //exposes /schools instead /schools/createSchool
-            'patch=updateSchool:schoolId', //exposes /schools/:schoolId instead /schools/updateSchool
-            'get=getOneSchool:schoolId', //exposes /schools/:schoolId instead /schools/getOneSchool
-            'get=index.getAllSchools', // exposes /schools instead of /schools/getAllSchools
-            'delete=deleteSchool:schoolId', //exposes /schools/:schoolId instead /schools/deleteSchool
-        ];
+    'post=index.createSchool', //exposes /schools instead /schools/createSchool
+    'patch=updateSchool:schoolId', //exposes /schools/:schoolId instead /schools/updateSchool
+    'get=getOneSchool:schoolId', //exposes /schools/:schoolId instead /schools/getOneSchool
+    'get=index.getAllSchools', // exposes /schools instead of /schools/getAllSchools
+    'delete=deleteSchool:schoolId', //exposes /schools/:schoolId instead /schools/deleteSchool
+];
 ```
 
 2. The token endpoint was initially exposed, which posed a security risk by making the system vulnerable. I removed the exposure to improve security.
 
 3. The roles and users fetched during middleware checks (e.g., `__authentication`, `_superAdmin`, and `__schoolAdministrator`) are cached in the system for one hour. This reduces database latency and improves performance.
 
+4. I added a seed file to create roles and a default super admin. Since the super admin is required to perform most actions and cannot be created publicly, it is added through the seed file, which runs only once. To avoid conflicts, the seed files are ordered by a naming convention: the first file starts with 0, the second with 1, and so on.
 
 ## 🔧 Installation
 
@@ -84,22 +85,28 @@ npm install
 Create a `.env` file with the following variables:
 
 ```
-SERVICE_NAME=
-MONGO_URI=
-USER_PORT=
-CACHE_PREFIX=
-CACHE_REDIS=
-CORTEX_PREFIX=
-CORTEX_REDIS=
-CORTEX_TYPE=
-OYSTER_PREFIX=
-OYSTER_REDIS=
-LONG_TOKEN_SECRET=
-SHORT_TOKEN_SECRET=
-NACL_SECRET=
+SERVICE_NAME=soar_inc # you can change to anything
+MONGO_URI=<MONGO DB URL>
+USER_PORT=3000 # change to any port
+CACHE_PREFIX=soar_app # you can change to anything
+CACHE_REDIS=<REDIS URL WITH PORT>
+CORTEX_PREFIX=soar_app # you can change to anything
+CORTEX_REDIS=<REDIS URL WITH PORT>
+CORTEX_TYPE=service # you can change to anything
+OYSTER_PREFIX=soar_app # you can change to anything
+OYSTER_REDIS=<REDIS URL WITH PORT>
+LONG_TOKEN_SECRET=<JWT LONG TOKEN SECRET>
+SHORT_TOKEN_SECRET=<JWT SHORT TOKEN SECRET>
+NACL_SECRET=<NACL_SECRET> # can be empty for this use case
 
 
 ```
+
+## 🌱 Seed default data (Roles and SuperAdmin)
+```bsh
+npm run seed
+```
+
 
 ## 🔒 Authentication
 
@@ -1149,7 +1156,6 @@ Authorization: Bearer <token>
     "errors": []
 }
 ```
-
 
 ## 🧪 Testing
 
