@@ -130,21 +130,13 @@ The API uses JWT-based authentication with the following roles:
 -   Passwords must be at least 8 characters long
 -   Passwords are hashed before storage
 -   Email addresses must be valid and unique
--   Only superadmins can register new users
--   Access token is required for registration
 -   Username must be unique in the system
 
 ### Rate Limiting
 
--   Maximum 5 registration attempts per IP address per hour
+-   Maximum 50 attempts per IP address per 15mins
 -   Blocked IPs will receive a 429 Too Many Requests response
 
-### Notes
-
--   All fields are required
--   Email verification might be required based on configuration
--   Passwords should contain a mix of letters, numbers, and special characters
--   Username should only contain alphanumeric characters and underscores
 
 ## 📚 API Documentation
 
