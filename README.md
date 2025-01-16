@@ -45,6 +45,25 @@ A robust RESTful API service for managing schools, classrooms, and students with
 -   MongoDB/Redis
 -   npm or yarn
 
+
+## 🛠️ Technical decisions made.
+1. To accommodate the full REST API pattern, I modified the implementation of `Api.manager.js`. Initially, it did not support base routes and parameterized routes, such as `/api/students` and `/api/students/:id`. This change was made to enhance the system's functionality. It also affects how HTTP methods are exposed to the public. Here is how it looks now
+
+```js
+this.httpExposed = [
+            'post=index.createSchool', //exposes /schools instead /schools/createSchool
+            'patch=updateSchool:schoolId', //exposes /schools/:schoolId instead /schools/updateSchool
+            'get=getOneSchool:schoolId', //exposes /schools/:schoolId instead /schools/getOneSchool
+            'get=index.getAllSchools', // exposes /schools instead of /schools/getAllSchools
+            'delete=deleteSchool:schoolId', //exposes /schools/:schoolId instead /schools/deleteSchool
+        ];
+```
+
+2. The token endpoint was initially exposed, which posed a security risk by making the system vulnerable. I removed the exposure to improve security.
+
+3. The roles and users fetched during middleware checks (e.g., `__authentication`, `_superAdmin`, and `__schoolAdministrator`) are cached in the system for one hour. This reduces database latency and improves performance.
+
+
 ## 🔧 Installation
 
 1. Clone the repository:
@@ -272,7 +291,7 @@ Content-Type: application/json
 }
 ```
 
-### Schools Endpoints
+# Schools Endpoints
 
 ### Create School (Superadmin only)
 
@@ -467,7 +486,6 @@ Authorization: Bearer <token>
 }
 ```
 
-
 #### Success Response
 
 ```json
@@ -491,7 +509,6 @@ Authorization: Bearer <token>
     "errors": []
 }
 ```
-
 
 ### Delete School
 
@@ -526,20 +543,613 @@ Authorization: Bearer <token>
 }
 ```
 
+# School Admin Endpoints
+
+### Create School Admin
+
+Assign a user as an administrator for a specific school.
+
+#### Endpoint
+
+```http
+POST /api/school-admins
+```
+
+#### Headers
+
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+#### Request Body
+
+```json
+{
+    "userId": "string",
+    "schoolId": "string"
+}
+```
+
+#### Request Body Parameters
+
+| Parameter | Type   | Required | Description                         |
+| --------- | ------ | -------- | ----------------------------------- |
+| userId    | string | Yes      | ID of the user to make admin        |
+| schoolId  | string | Yes      | ID of the school to assign admin to |
+
+#### Success Response
+
+```json
+{
+    "message": "School admin created successfully",
+    "ok": true,
+    "data": {
+        "schoolId": "string",
+        "userId": "string",
+        "_id": "string",
+        "createdAt": "string",
+        "updatedAt": "string"
+    },
+    "errors": []
+}
+```
+
+### List School Admins
+
+Retrieve a list of all school administrators.
+
+#### Endpoint
+
+```http
+GET /api/school-admins
+```
+
+#### Headers
+
+```
+Authorization: Bearer <token>
+```
+
+#### Query Parameters
+
+| Parameter | Type   | Required | Description                | Default |
+| --------- | ------ | -------- | -------------------------- | ------- |
+| page      | number | No       | Page number for pagination | 1       |
+| limit     | number | No       | Number of admins per page  | 10      |
+
+#### Success Response
+
+```json
+{
+    "message": "School admins fetched successfully",
+    "ok": true,
+    "data": {
+        "docs": [
+            {
+                "_id": "string",
+                "schoolId": "string",
+                "userId": "string",
+                "createdAt": "string",
+                "updatedAt": "string"
+            }
+        ],
+        "totalDocs": 1,
+        "limit": 10,
+        "totalPages": 1,
+        "page": 1,
+        "pagingCounter": 1,
+        "hasPrevPage": false,
+        "hasNextPage": false,
+        "prevPage": null,
+        "nextPage": null
+    },
+    "errors": []
+}
+```
+
+### Get School Admin
+
+Retrieve details of a specific school administrator by ID.
+
+#### Endpoint
+
+```http
+GET /api/school-admins/:id
+```
+
+#### Headers
+
+```
+Authorization: Bearer <token>
+```
+
+#### URL Parameters
+
+| Parameter | Type   | Required | Description               |
+| --------- | ------ | -------- | ------------------------- |
+| id        | string | Yes      | Unique ID of school admin |
+
+#### Success Response
+
+```json
+{
+    "message": "School admin fetched successfully",
+    "ok": true,
+    "data": {
+        "_id": "string",
+        "schoolId": "string",
+        "createdAt": "string",
+        "updatedAt": "string",
+        "user": {
+            "_id": "string",
+            "first_name": "string",
+            "last_name": "string",
+            "username": "string",
+            "email": "string",
+            "roles": ["string"],
+            "createdAt": "string",
+            "updatedAt": "string"
+        }
+    },
+    "errors": []
+}
+```
+
+### Delete School Admin
+
+Remove a school administrator assignment.
+
+#### Endpoint
+
+```http
+DELETE /api/school-admins/:id
+```
+
+#### Headers
+
+```
+Authorization: Bearer <token>
+```
+
+#### URL Parameters
+
+| Parameter | Type   | Required | Description               |
+| --------- | ------ | -------- | ------------------------- |
+| id        | string | Yes      | Unique ID of school admin |
+
+#### Success Response
+
+```json
+{
+    "message": "School admin deleted successfully",
+    "ok": true,
+    "data": {},
+    "errors": []
+}
+```
 
 ### Classrooms Endpoints
 
--   GET `/api/class-rooms` - List classrooms
--   POST `/api/class-rooms/classrooms` - Create classroom
--   PUT `/api/class-rooms/:schoolId/classrooms/:id` - Update classroom
--   DELETE `/api/class-rooms/:schoolId/classrooms/:id` - Delete classroom
+### Create Classroom
+
+Create a new classroom for a specific school.
+
+#### Endpoint
+
+```http
+POST /api/class-rooms
+```
+
+#### Headers
+
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+#### Request Body
+
+```json
+{
+    "schoolId": "string",
+    "name": "string",
+    "capacity": 100
+}
+```
+
+#### Request Body Parameters
+
+| Parameter | Type   | Required | Description                        |
+| --------- | ------ | -------- | ---------------------------------- |
+| schoolId  | string | Yes      | ID of the school                   |
+| name      | string | Yes      | Name of the classroom              |
+| capacity  | number | Yes      | Maximum number of students allowed |
+
+#### Success Response
+
+```json
+{
+    "message": "Class room created successfully",
+    "ok": true,
+    "data": {
+        "name": "string",
+        "schoolId": "string",
+        "capacity": 100,
+        "createdByUserId": "string",
+        "_id": "string",
+        "createdAt": "string",
+        "updatedAt": "string"
+    },
+    "errors": []
+}
+```
+
+### Update Classroom
+
+Update details of a specific classroom.
+
+#### Endpoint
+
+```http
+PATCH /api/class-rooms/:id
+```
+
+#### Headers
+
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+#### URL Parameters
+
+| Parameter | Type   | Required | Description            |
+| --------- | ------ | -------- | ---------------------- |
+| id        | string | Yes      | Unique ID of classroom |
+
+#### Request Body
+
+```json
+{
+    "schoolId": "string",
+    "name": "string",
+    "capacity": 100
+}
+```
+
+#### Request Body Parameters
+
+| Parameter | Type   | Required | Description                        |
+| --------- | ------ | -------- | ---------------------------------- |
+| schoolId  | string | No       | ID of the school                   |
+| name      | string | No       | Name of the classroom              |
+| capacity  | number | No       | Maximum number of students allowed |
+
+#### Success Response
+
+```json
+{
+    "message": "Class room updated successfully",
+    "ok": true,
+    "data": {
+        "_id": "string",
+        "name": "string",
+        "schoolId": "string",
+        "capacity": 100,
+        "createdByUserId": "string",
+        "createdAt": "string",
+        "updatedAt": "string"
+    },
+    "errors": []
+}
+```
+
+### List Classrooms
+
+Retrieve a list of all classrooms.
+
+#### Endpoint
+
+```http
+GET /api/class-rooms
+```
+
+#### Headers
+
+```
+Authorization: Bearer <token>
+```
+
+#### Query Parameters
+
+| Parameter | Type   | Required | Description                   | Default |
+| --------- | ------ | -------- | ----------------------------- | ------- |
+| page      | number | No       | Page number for pagination    | 1       |
+| limit     | number | No       | Number of classrooms per page | 10      |
+
+#### Success Response
+
+```json
+{
+    "message": "Class rooms fetched successfully",
+    "ok": true,
+    "data": {
+        "docs": [
+            {
+                "_id": "string",
+                "name": "string",
+                "schoolId": "string",
+                "capacity": 100,
+                "createdByUserId": "string",
+                "createdAt": "string",
+                "updatedAt": "string"
+            }
+        ],
+        "totalDocs": 3,
+        "limit": 10,
+        "totalPages": 1,
+        "page": 1,
+        "pagingCounter": 1,
+        "hasPrevPage": false,
+        "hasNextPage": false,
+        "prevPage": null,
+        "nextPage": null
+    },
+    "errors": []
+}
+```
+
+### Get Classroom
+
+Retrieve details of a specific classroom by ID.
+
+#### Endpoint
+
+```http
+GET /api/class-rooms/:id
+```
+
+#### Headers
+
+```
+Authorization: Bearer <token>
+```
+
+#### URL Parameters
+
+| Parameter | Type   | Required | Description            |
+| --------- | ------ | -------- | ---------------------- |
+| id        | string | Yes      | Unique ID of classroom |
+
+#### Success Response
+
+```json
+{
+    "message": "Class room fetched successfully",
+    "ok": true,
+    "data": {
+        "_id": "string",
+        "name": "string",
+        "schoolId": "string",
+        "capacity": 100,
+        "createdByUserId": "string",
+        "createdAt": "string",
+        "updatedAt": "string"
+    },
+    "errors": []
+}
+```
+
+### Delete Classroom
+
+Delete a specific classroom by ID.
+
+#### Endpoint
+
+```http
+DELETE /api/class-rooms/:id
+```
+
+#### Headers
+
+```
+Authorization: Bearer <token>
+```
+
+#### URL Parameters
+
+| Parameter | Type   | Required | Description            |
+| --------- | ------ | -------- | ---------------------- |
+| id        | string | Yes      | Unique ID of classroom |
+
+#### Success Response
+
+```json
+{
+    "message": "Class room deleted successfully",
+    "ok": true,
+    "data": {},
+    "errors": []
+}
+```
+
+### Create Student
+
+Register a user as a student in a specific classroom and school.
+
+#### Endpoint
+
+```http
+POST /api/students
+```
+
+#### Headers
+
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+#### Request Body
+
+```json
+{
+    "classRoomId": "string",
+    "schoolId": "string"
+}
+```
+
+#### Request Body Parameters
+
+| Parameter   | Type   | Required | Description         |
+| ----------- | ------ | -------- | ------------------- |
+| classRoomId | string | Yes      | ID of the classroom |
+| schoolId    | string | Yes      | ID of the school    |
+
+#### Success Response
+
+```json
+{
+    "message": "Student created successfully",
+    "ok": true,
+    "data": {
+        "student": {
+            "userId": "string",
+            "classRoomId": "string",
+            "registrationNumber": "string",
+            "status": "pending",
+            "schoolId": "string",
+            "_id": "string",
+            "createdAt": "string",
+            "updatedAt": "string"
+        }
+    },
+    "errors": []
+}
+```
 
 ### Students Endpoints
 
--   GET `/api/schools/:schoolId/students` - List students
--   POST `/api/schools/:schoolId/students` - Enroll student
--   PUT `/api/schools/:schoolId/students/:id` - Update student
--   DELETE `/api/schools/:schoolId/students/:id` - Remove student
+### List Students
+
+Retrieve a list of students with filtering options.
+
+#### Endpoint
+
+```http
+GET /api/students
+```
+
+#### Headers
+
+```
+Authorization: Bearer <token>
+```
+
+#### Query Parameters
+
+| Parameter | Type   | Required | Description                            | Default |
+| --------- | ------ | -------- | -------------------------------------- | ------- |
+| schoolId  | string | Yes      | ID of the school to filter students    | -       |
+| classId   | string | No       | ID of the classroom to filter students | -       |
+| page      | number | No       | Page number for pagination             | 1       |
+| limit     | number | No       | Number of students per page            | 10      |
+
+#### Success Response
+
+```json
+{
+    "message": "Students fetched successfully",
+    "ok": true,
+    "data": {
+        "docs": [
+            {
+                "_id": "string",
+                "userId": "string",
+                "classRoomId": "string",
+                "registrationNumber": "string",
+                "status": "pending",
+                "schoolId": "string",
+                "createdAt": "string",
+                "updatedAt": "string"
+            }
+        ],
+        "totalDocs": 1,
+        "limit": 10,
+        "totalPages": 1,
+        "page": 1,
+        "pagingCounter": 1,
+        "hasPrevPage": false,
+        "hasNextPage": false,
+        "prevPage": null,
+        "nextPage": null
+    },
+    "errors": []
+}
+```
+
+### Update Student
+
+Update details of a specific student.
+
+#### Endpoint
+
+```http
+PATCH /api/students/:id
+```
+
+#### Headers
+
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+#### URL Parameters
+
+| Parameter | Type   | Required | Description                 |
+| --------- | ------ | -------- | --------------------------- |
+| id        | string | Yes      | Unique ID of student record |
+
+#### Request Body
+
+```json
+{
+    "classRoomId": "string",
+    "schoolId": "string",
+    "status": "string"
+}
+```
+
+#### Request Body Parameters
+
+| Parameter   | Type   | Required | Description                            |
+| ----------- | ------ | -------- | -------------------------------------- |
+| classRoomId | string | No       | ID of the new classroom                |
+| schoolId    | string | No       | ID of the new school                   |
+| status      | string | No       | New status (e.g., "active", "pending") |
+
+#### Success Response
+
+```json
+{
+    "message": "Student updated successfully",
+    "ok": true,
+    "data": {
+        "_id": "string",
+        "userId": "string",
+        "classRoomId": "string",
+        "registrationNumber": "string",
+        "status": "string",
+        "schoolId": "string",
+        "createdAt": "string",
+        "updatedAt": "string"
+    },
+    "errors": []
+}
+```
+
 
 ## 🧪 Testing
 

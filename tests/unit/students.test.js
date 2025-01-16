@@ -71,8 +71,8 @@ describe('StudentManager', () => {
         it('should create a student successfully', async () => {
             // Mock successful validations
             mockValidators.student.createStudent.mockResolvedValue(null);
-            mockManagers.schools.getSchoolById.mockResolvedValue({ data: {} });
-            mockManagers['class-rooms'].findOneClassRoom.mockResolvedValue({ data: { _id: mockData.classRoomId } });
+            mockManagers.schools.getSchoolById.mockResolvedValue({ });
+            mockManagers['class-rooms'].findOneClassRoom.mockResolvedValue({  _id: mockData.classRoomId, schoolId: mockData.schoolId });
             mockMongoModels.Student.findOne.mockResolvedValue(null);
             mockMongoModels.Student.create.mockResolvedValue({
                 _id: new mongoose.Types.ObjectId(),
@@ -88,8 +88,11 @@ describe('StudentManager', () => {
 
         it('should return error if student already exists', async () => {
             mockValidators.student.createStudent.mockResolvedValue(null);
-            mockManagers.schools.getSchoolById.mockResolvedValue({ data: {} });
-            mockManagers['class-rooms'].findOneClassRoom.mockResolvedValue({ data: {} });
+            mockManagers.schools.getSchoolById.mockResolvedValue({  });
+            mockManagers['class-rooms'].findOneClassRoom.mockResolvedValue({
+                _id: mockData.classRoomId,
+                schoolId: mockData.schoolId,
+            });
             mockMongoModels.Student.findOne.mockResolvedValue({ _id: new mongoose.Types.ObjectId() });
 
             const result = await studentManager.createStudent(mockData);
@@ -116,7 +119,12 @@ describe('StudentManager', () => {
             };
 
             studentManager.findOneStudent = jest.fn().mockResolvedValue(mockStudent);
-            mockManagers['school-admins'].checkIfUserIsSchoolAdmin.mockResolvedValue({ data: {} });
+            mockManagers[
+                'school-admins'
+            ].checkIfUserIsSchoolAdmin.mockResolvedValue({
+                _id: mockData.classRoomId,
+                schoolId: mockData.schoolId,
+            });
 
             const result = await studentManager.updateStudent(mockData);
 
@@ -137,7 +145,7 @@ describe('StudentManager', () => {
 
         it('should fetch students successfully', async () => {
             mockValidators.student.getStudents.mockResolvedValue(null);
-            mockManagers['school-admins'].checkIfUserIsSchoolAdmin.mockResolvedValue({ data: {} });
+            mockManagers['school-admins'].checkIfUserIsSchoolAdmin.mockResolvedValue({ });
             mockMongoModels.Student.paginate.mockResolvedValue({
                 docs: [],
                 total: 0,
@@ -168,7 +176,7 @@ describe('StudentManager', () => {
             };
 
             studentManager.findOneStudent = jest.fn().mockResolvedValue(mockStudent);
-            mockManagers['school-admins'].checkIfUserIsSchoolAdmin.mockResolvedValue({ data: {} });
+            mockManagers['school-admins'].checkIfUserIsSchoolAdmin.mockResolvedValue({  });
 
             const result = await studentManager.deleteStudent(mockData);
 

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const studentStatus = ['active', 'inactive', 'pending'];
 
@@ -12,6 +13,8 @@ const StudentSchema = new mongoose.Schema(
     },
     { timestamps: true, collection: 'students' }
 );
+
+StudentSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('Student', StudentSchema);
 module.exports.studentStatus = studentStatus;

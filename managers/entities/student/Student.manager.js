@@ -61,6 +61,15 @@ module.exports = class StudentManager {
                 return classRoom;
             }
 
+
+            if(classRoom.schoolId.toString() !== schoolId.toString()){
+                return this.managers.responseTransformer.errorTransformer({
+                    message: 'Class room does not belong to this school',
+                    error: [],
+                    code: HTTP_STATUS.BAD_REQUEST,
+                });
+            }
+
             const user = await this.mongomodels.User.findOne({
                 _id: __authentication._id,
             });
@@ -226,6 +235,7 @@ module.exports = class StudentManager {
 
 
             const paginateOptions = getPagination(__query);
+            console.log({ queryData: this.mongomodels.Student });
             const students = await this.mongomodels.Student.paginate(
                 queryData,
                 paginateOptions
