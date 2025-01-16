@@ -75,7 +75,7 @@ this.httpExposed = [
 
 ```bash
 git clone https://github.com/Stancobridge/soar-inc-assessment/
-cd school-management-api
+cd soar-inc-assessment
 ```
 
 2. Install dependencies:
