@@ -45,6 +45,9 @@ A robust RESTful API service for managing schools, classrooms, and students with
 -   MongoDB/Redis
 -   npm or yarn
 
+## 📙 Database diagram
+The database design can be found here [View Document](https://drive.google.com/file/d/1kVb_nQ4xiVy1Y4u84xJut007uQGD4B7m/view?usp=sharing)
+
 ## 🛠️ Technical decisions made.
 
 1. To accommodate the full REST API pattern, I modified the implementation of `Api.manager.js`. Initially, it did not support base routes and parameterized routes, such as `/api/students` and `/api/students/:id`. This change was made to enhance the system's functionality. It also affects how HTTP methods are exposed to the public. Here is how it looks now
